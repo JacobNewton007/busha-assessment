@@ -39,6 +39,7 @@ db/migrations/new:
 ## db/migrations/up: apply all up database migrations
 .PHONY: db/migrations/up
 db/migrations/up:
+	go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo 'Running migrations...'
 	migrate -path ./migrations -database ${BUSHA_DB_DSN} up
 
@@ -86,7 +87,6 @@ build/api:
 	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./main.go 
 .PHONY: start
 start: db/migrations/up
-	go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	./bin/api -db-dsn=${BUSHA_DB_DSN}
 
 build/dev:
