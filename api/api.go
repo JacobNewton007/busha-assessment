@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"context"
@@ -48,7 +48,7 @@ var (
 	Ctx    = context.TODO()
 )
 
-func main() {
+func RunApi() {
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server ports")
@@ -94,7 +94,7 @@ func main() {
 	}
 
 	defer db.Close()
-	sugar.Infow("database connection pool established", "tag", "database-connectoin")
+	sugar.Infow("database connection pool established", "tag", "database-connection")
 
 	app := &application{
 		config: cfg,
@@ -110,7 +110,6 @@ func main() {
 }
 
 func openDB(cfg config) (*sql.DB, error) {
-
 	db, err := sql.Open("postgres", cfg.db.dsn)
 	if err != nil {
 		return nil, err

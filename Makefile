@@ -1,3 +1,4 @@
+#!make
 include .envrc
 
 
@@ -21,8 +22,8 @@ confirm:
 
 ## run/api: run the cmd/api application
 .PHONY: run/api
-run/api:
-	go run ./cmd/api -db-dsn=${BUSHA_DB_DSN}
+run/api: db/migrations/up
+	go run ./main.go -db-dsn=${BUSHA_DB_DSN}
 
 ## db/psql: connect to the database using psql
 .PHONY: db/psql
@@ -78,8 +79,20 @@ git_description = $(shell git describe --always --dirty --tags --long)
 linker_flags = '-s -X main.buildTime=${current_time} -X main.version=${git_description}'
 
 ## build/api: build the cmd/api application
-.PHONY: build/api
+.PHONY: build/main.go
 build/api:
-	@echo 'Building cmd/api...'
-	go build -ldflags=${linker_flags} -o=./bin/api ./cmd/api
-	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./cmd/api 
+	@echo 'Building main...'
+	go build  -o=./bin/api ./main.go
+	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./main.go 
+.PHONY: start
+start: db/migrations/up
+		./bin/api -db-dsn=${BUSHA_DB_DSN}
+
+build/dev:
+	docker-compose up
+
+docker/build:
+	docker build -t app-prod . --target production
+
+docker/start:
+	docker run -p 4000:4000 --name app-prod app-prod
