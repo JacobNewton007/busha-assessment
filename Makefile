@@ -38,7 +38,7 @@ db/migrations/new:
 
 ## db/migrations/up: apply all up database migrations
 .PHONY: db/migrations/up
-db/migrations/up: confirm
+db/migrations/up:
 	@echo 'Running migrations...'
 	migrate -path ./migrations -database ${BUSHA_DB_DSN} up
 
