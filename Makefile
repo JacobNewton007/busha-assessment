@@ -41,7 +41,7 @@ db/migrations/new:
 db/migrations/up:
 	go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo 'Running migrations...'
-	migrate -path ./migrations -database ${BUSHA_DB_DSN} up
+	migrate -database ${BUSHA_DB_DSN} -path ./migrations  up
 
 ## db/migrations/down: apply all up database migrations
 .PHONY: db/migrations/down
