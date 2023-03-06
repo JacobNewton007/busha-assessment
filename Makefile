@@ -84,8 +84,8 @@ linker_flags = '-s -X main.buildTime=${current_time} -X main.version=${git_descr
 .PHONY: build/main.go
 build/api:
 	@echo 'Building main...'
-	go build  -o=./bin/api ./main.go
-	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./main.go 
+	go build -tags netgo -ldflags '-s -w' -o=./bin/api
+	# GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./main.go 
 .PHONY: start
 start: db/migrations/up
 	./bin/api 
