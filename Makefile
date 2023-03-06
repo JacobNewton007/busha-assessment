@@ -23,7 +23,7 @@ confirm:
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api: db/migrations/up
-	go run ./main.go -db-dsn=${BUSHA_DB_DSN}
+	go run ./main.go -db-dsn='postgres://jacobs:password@127.0.0.1/busha_test?sslmode=disable'
 
 ## db/psql: connect to the database using psql
 .PHONY: db/psql
@@ -41,7 +41,7 @@ db/migrations/new:
 db/migrations/up:
 	go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo 'Running migrations...'
-	migrate -database ${BUSHA_DB_DSN} -path ./migrations  up
+	migrate -database 'postgres://jacobs:password@127.0.0.1/busha_test?sslmode=disable' -path ./migrations  up
 
 ## db/migrations/down: apply all up database migrations
 .PHONY: db/migrations/down
