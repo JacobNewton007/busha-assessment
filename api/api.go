@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/JacobNewton007/busha-test/internals/data"
@@ -19,9 +20,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+
 var (
 	version   = "1.0.0"
 	buildTime string
+)
+
+var (
+
 )
 
 type config struct {
@@ -34,6 +40,13 @@ type config struct {
 		maxIdleTime  string
 	}
 	// redis_url string
+}
+
+type db_config struct {
+	dsn          string
+	maxOpenConns int
+	maxIdleConns int
+	maxIdleTime  string
 }
 
 type application struct {
@@ -49,19 +62,26 @@ var (
 )
 
 func RunApi() {
-	var cfg config
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+	port, _ := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
+	max_conns, _ := strconv.ParseInt(os.Getenv("MAX_CONNS"), 10, 64)
+	idle_conns, _ := strconv.ParseInt(os.Getenv("IDLE_CONNS"), 10, 64)
 
-	flag.IntVar(&cfg.port, "port", 4000, "API server ports")
-	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
+	db_config := db_config{
+		dsn: os.Getenv("BUSHA_DB"),
+		maxOpenConns: int(max_conns),
+		maxIdleConns: int(idle_conns),
+		maxIdleTime:	os.Getenv("IDLE_TIME"),
+	}
 
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "", "PostgreSQL DSN")
-	flag.StringVar(&cfg.db.dsn, "redis-url", "", "Redis URL")
-
-	// Read the connection pool settings from command-line flags into the config struct.
-	// Notice the default values that we're using?
-	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
-	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
-	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
+	cfg := config{
+		port: int(port),
+		env: os.Getenv("APP_ENV"),
+		db: db_config,
+	}
 
 	displayVersion := flag.Bool("version", false, "Display version and exist")
 
@@ -110,6 +130,7 @@ func RunApi() {
 }
 
 func openDB(cfg config) (*sql.DB, error) {
+	fmt.Println(cfg.db.dsn)
 	db, err := sql.Open("postgres", cfg.db.dsn)
 	if err != nil {
 		return nil, err
@@ -140,17 +161,12 @@ func openDB(cfg config) (*sql.DB, error) {
 
 func InitialRedis(cfg config) (*redis.Client, error) {
 	if os.Getenv("APP_ENV") != "PRODUCTION" {
-		err := godotenv.Load(".envrc")
-		if err != nil {
-			log.Println("Error loading .env file")
-		}
-
 		client := redis.NewClient(&redis.Options{
 			Addr:     "127.0.0.1:6379",
 			Password: "",
 			DB:       0,
 		})
-		err = client.Ping(Ctx).Err()
+		err := client.Ping(Ctx).Err()
 		if err != nil {
 			log.Fatalf("Failed to connect to redis: %s", err.Error())
 		}

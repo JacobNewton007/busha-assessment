@@ -1,5 +1,5 @@
 #!make
-include .envrc
+include .env
 
 
 # ==================================================================================== # 
@@ -22,13 +22,14 @@ confirm:
 
 ## run/api: run the cmd/api application
 .PHONY: run/api
-run/api: db/migrations/up
-	go run ./main.go -db-dsn='postgres://jacobs:password@127.0.0.1/busha_test?sslmode=disable'
+run/api: 
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	go run ./main.go
 
 ## db/psql: connect to the database using psql
 .PHONY: db/psql
 db/psql:
-	psql ${BUSHA_DB_DSN}
+	psql ${BUSHA_DB}
 
 ## db/migrations/new name=$1: create a new database migration
 .PHONY: db/migrations/new
@@ -41,13 +42,13 @@ db/migrations/new:
 db/migrations/up:
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo 'Running migrations...'
-	migrate  -database 'postgres://busha_db_dsn_user:SToDe06JdSfX8BfUDFbhTITQyRag9XT2@dpg-cg2ff964dada1e16f08g-a/busha_db_dsn' -path ./migrations up
+	migrate  -database ${BUSHA_DB} -path ./migrations up
 
 ## db/migrations/down: apply all up database migrations
 .PHONY: db/migrations/down
 db/migrations/down: confirm
 	@echo 'Running migrations...'
-	migrate -path ./migrations -database ${BUSHA_DB_DSN} down
+	migrate -path ./migrations -database ${BUSHA_DB} down
 
 # ==================================================================================== # 
 # QUALITY CONTROL
@@ -87,7 +88,7 @@ build/api:
 	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./main.go 
 .PHONY: start
 start: db/migrations/up
-	./bin/api -db-dsn='postgres://busha_db_dsn_user:SToDe06JdSfX8BfUDFbhTITQyRag9XT2@dpg-cg2ff964dada1e16f08g-a/busha_db_dsn'
+	./bin/api 
 
 build/dev:
 	docker-compose up
