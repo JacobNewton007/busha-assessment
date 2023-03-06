@@ -39,9 +39,9 @@ db/migrations/new:
 ## db/migrations/up: apply all up database migrations
 .PHONY: db/migrations/up
 db/migrations/up:
-	go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo 'Running migrations...'
-	migrate -database 'postgres://jacobs:password@127.0.0.1/busha_test?sslmode=disable' -path ./migrations  up
+	migrate  -database 'postgres://busha_db_dsn_user:SToDe06JdSfX8BfUDFbhTITQyRag9XT2@dpg-cg2ff964dada1e16f08g-a/busha_db_dsn' -path ./migrations up
 
 ## db/migrations/down: apply all up database migrations
 .PHONY: db/migrations/down
@@ -87,7 +87,7 @@ build/api:
 	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./main.go 
 .PHONY: start
 start: db/migrations/up
-	./bin/api -db-dsn=${BUSHA_DB_DSN}
+	./bin/api -db-dsn='postgres://busha_db_dsn_user:SToDe06JdSfX8BfUDFbhTITQyRag9XT2@dpg-cg2ff964dada1e16f08g-a/busha_db_dsn'
 
 build/dev:
 	docker-compose up
