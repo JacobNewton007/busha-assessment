@@ -89,12 +89,3 @@ build/api:
 .PHONY: start
 start: db/migrations/up
 	./bin/api 
-
-build/dev:
-	docker-compose up
-
-docker/build:
-	docker build -t app-prod . --target production
-
-docker/start:
-	docker run -p 4000:4000 --name app-prod app-prod

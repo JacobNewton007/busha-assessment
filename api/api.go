@@ -7,7 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/url"
+	// "net/url"
 	"os"
 	"strconv"
 	"time"
@@ -173,16 +173,19 @@ func InitialRedis(cfg config) (*redis.Client, error) {
 		return client, nil
 	} else {
 		redis_url := os.Getenv("REDIS_URL")
-		redisUrl, _ := url.Parse(redis_url)
-		redisPassword, _ := redisUrl.User.Password()
-		redisOptions := redis.Options{
-			Addr:     redisUrl.Host,
-			Password: redisPassword,
-			DB:       0,
+		// redisUrl, _ := url.Parse(string(redis_url))
+		// redisPassword, _ := redisUrl.User.Password()
+		// redisOptions := redis.Options{
+		// 	Addr:     redisUrl.Host,
+		// 	Password: redisPassword,
+		// 	DB:       0,
+		// }
+		options, err := redis.ParseURL(redis_url)
+		if err != nil {
+			panic(err)
 		}
-
-		client := redis.NewClient(&redisOptions)
-		err := client.Ping(Ctx).Err()
+		client := redis.NewClient(options)
+		err = client.Ping(Ctx).Err()
 		if err != nil {
 			log.Fatalf("Failed to connect to redis: %s", err.Error())
 		}

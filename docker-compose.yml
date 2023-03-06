@@ -6,7 +6,6 @@ services:
     image: app-dev
     build:
       context: .
-      target: development
     volumes:
       - .:/app
     ports:
